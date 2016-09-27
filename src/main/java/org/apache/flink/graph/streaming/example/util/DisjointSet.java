@@ -137,6 +137,10 @@ public class DisjointSet<R extends Serializable> implements Serializable {
 
     @Override
     public String toString() {
+        return buildMap().toString();
+    }
+
+    public Map<R, List<R>> buildMap() {
         Map<R, List<R>> comps = new HashMap<>();
 
         for (R vertex : getMatches().keySet()) {
@@ -149,7 +153,7 @@ public class DisjointSet<R extends Serializable> implements Serializable {
                 comps.put(parent, cc);
             }
         }
-        return comps.toString();
+	return comps;
     }
 }
 
