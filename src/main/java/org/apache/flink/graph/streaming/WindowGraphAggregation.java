@@ -14,6 +14,8 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.graph.Edge;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.assigners.WindowAssigner;
+import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
@@ -30,16 +32,24 @@ import java.util.concurrent.TimeUnit;
 public class WindowGraphAggregation<K, EV, S extends Serializable, T> extends GraphAggregation<K, EV, S, T> {
 
 	private static final long serialVersionUID = 1L;
-	private long timeMillis;
+        private WindowAssigner windowAssigner;
 
 
 	public WindowGraphAggregation(EdgesFold<K, EV, S> updateFun, ReduceFunction<S> combineFun, MapFunction<S, T> transformFun, S initialVal, long timeMillis, boolean transientState) {
-		super(updateFun, combineFun, transformFun, initialVal, transientState);
-		this.timeMillis = timeMillis;
+		this(updateFun, combineFun, transformFun, initialVal, TumblingEventTimeWindows.of(Time.milliseconds(timeMillis)), transientState);
 	}
 
 	public WindowGraphAggregation(EdgesFold<K, EV, S> updateFun, ReduceFunction<S> combineFun, S initialVal, long timeMillis, boolean transientState) {
 		this(updateFun, combineFun, null, initialVal, timeMillis, transientState);
+	}
+
+	public WindowGraphAggregation(EdgesFold<K, EV, S> updateFun, ReduceFunction<S> combineFun, S initialVal, WindowAssigner newWindowAssigner, boolean transientState) {
+		this(updateFun, combineFun, null, initialVal, newWindowAssigner, transientState);
+	}
+
+	public WindowGraphAggregation(EdgesFold<K, EV, S> updateFun, ReduceFunction<S> combineFun, MapFunction<S, T> transformFun, S initialVal, WindowAssigner newWindowAssigner, boolean transientState) {
+		super(updateFun, combineFun, transformFun, initialVal, transientState);
+		windowAssigner = newWindowAssigner;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -54,7 +64,7 @@ public class WindowGraphAggregation<K, EV, S extends Serializable, T> extends Gr
 		DataStream<S> partialAgg = edgeStream
 				.map(new InitialMapper<K, EV>()).returns(typeInfo)
 				.keyBy(0)
-				.timeWindow(Time.of(timeMillis, TimeUnit.MILLISECONDS))
+		                .window(windowAssigner)
 				.fold(getInitialValue(), new PartialAgg<>(getUpdateFun())).flatMap(getAggregator(edgeStream)).setParallelism(1);
 
 		if (getTrasform() != null) {

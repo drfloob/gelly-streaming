@@ -26,6 +26,8 @@ import org.apache.flink.graph.streaming.WindowGraphAggregation;
 import org.apache.flink.graph.streaming.example.IterativeConnectedComponents;
 import org.apache.flink.graph.streaming.example.util.DisjointSet;
 import org.apache.flink.types.NullValue;
+import org.apache.flink.streaming.api.windowing.assigners.WindowAssigner;
+
 
 import java.io.Serializable;
 
@@ -53,6 +55,19 @@ public class ConnectedComponents<K extends Serializable, EV> extends WindowGraph
 	 */
 	public ConnectedComponents(long mergeWindowTime) {
 		super(new UpdateCC(), new CombineCC(), new DisjointSet<K>(), mergeWindowTime, false);
+	}
+
+	/**
+	 * Creates a ConnectedComponents object using WindowGraphAggregation class.
+	 * To find number of Connected Components the ConnectedComponents object is passed as an argument
+	 * to the aggregate function of the {@link org.apache.flink.graph.streaming.GraphStream} class.
+	 * Creating the ConnectedComponents object sets the EdgeFold, ReduceFunction, Initial Value,
+	 * Window Assigner and Transient State for using the Window Graph Aggregation class.
+	 *
+	 * @param windowAssigner custom Window Assigner to be used for the merger.
+	 */
+	public ConnectedComponents(WindowAssigner windowAssigner) {
+		super(new UpdateCC(), new CombineCC(), new DisjointSet<K>(), windowAssigner, false);
 	}
 
 	/**
