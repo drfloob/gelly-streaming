@@ -9,11 +9,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.typeutils.TupleTypeInfo;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.graph.Edge;
-import org.apache.flink.graph.streaming.EdgesFold;
-import org.apache.flink.graph.streaming.GraphStream;
-import org.apache.flink.graph.streaming.SimpleEdgeStream;
 import org.apache.flink.graph.streaming.example.util.DisjointSet;
-import org.apache.flink.graph.streaming.library.ConnectedComponents;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -95,7 +91,6 @@ public class WindowConnectedComponentsTest extends StreamingProgramTestBase {
 	env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
 	DataStream<Edge<Long, NullValue>> edges = getGraphStream(env);
-	// GraphStream<Long, NullValue, NullValue> graph = new SimpleEdgeStream<>(edges, env);
 
 	TypeInformation<Tuple2<Integer, Edge<Long, NullValue>>> typeInfo = new TupleTypeInfo<>(BasicTypeInfo.INT_TYPE_INFO, edges.getType());
 	edges
