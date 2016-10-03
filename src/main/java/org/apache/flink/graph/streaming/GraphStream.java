@@ -27,6 +27,9 @@ import org.apache.flink.graph.Vertex;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.types.NullValue;
+import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.graph.EdgeDirection;
+
 
 /**
  * The super-class of all graph stream types.
@@ -47,6 +50,16 @@ public abstract class GraphStream<K, VV, EV> {
 	 */
 	public abstract DataStream<Vertex<K, VV>> getVertices();
 
+        /**
+	 * @return a GraphWindowStream of the specifiec size
+	 */
+        public abstract GraphWindowStream<K, EV> slice(Time size);
+
+        /**
+	 * @return a GraphWindowStream of the specifiec size, keyed by direction
+	 */
+        public abstract GraphWindowStream<K, EV> slice(Time size, EdgeDirection direction);
+    
 	/**
 	 * @return the edge DataStream.
 	 */
