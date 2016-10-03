@@ -26,6 +26,7 @@ import org.apache.flink.graph.Edge;
 import org.apache.flink.graph.Vertex;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.windowing.assigners.WindowAssigner;
 import org.apache.flink.types.NullValue;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.graph.EdgeDirection;
@@ -33,7 +34,7 @@ import org.apache.flink.graph.EdgeDirection;
 
 /**
  * The super-class of all graph stream types.
- * 
+ *
  * @param <K> the vertex ID type
  * @param <VV> the vertex value type
  * @param <EV> the edge value type
@@ -50,16 +51,26 @@ public abstract class GraphStream<K, VV, EV> {
 	 */
 	public abstract DataStream<Vertex<K, VV>> getVertices();
 
-        /**
+	/**
 	 * @return a GraphWindowStream of the specifiec size
 	 */
-        public abstract GraphWindowStream<K, EV> slice(Time size);
+	public abstract GraphWindowStream<K, EV> slice(Time size);
 
-        /**
+	/**
 	 * @return a GraphWindowStream of the specifiec size, keyed by direction
 	 */
-        public abstract GraphWindowStream<K, EV> slice(Time size, EdgeDirection direction);
-    
+	public abstract GraphWindowStream<K, EV> slice(Time size, EdgeDirection direction);
+
+	/**
+	 * @return a GraphWindowStream of the specifiec size
+	 */
+	public abstract GraphWindowStream<K, EV> slice(WindowAssigner windowAssigner);
+
+	/**
+	 * @return a GraphWindowStream of the specifiec size, keyed by direction
+	 */
+	public abstract GraphWindowStream<K, EV> slice(WindowAssigner windowAssigner, EdgeDirection direction);
+
 	/**
 	 * @return the edge DataStream.
 	 */
@@ -143,12 +154,12 @@ public abstract class GraphStream<K, VV, EV> {
 
 	/**
 	 * Applies an incremental aggregation on a graphstream and returns a stream of aggregation results 
-	 * 
+	 *
 	 * @param graphAggregation
 	 * @param <S>
 	 * @param <T>
-     * @return
-     */
+	 * @return
+	 */
 	public abstract <S extends Serializable, T> DataStream<T> aggregate(
 			GraphAggregation<K,EV,S,T> graphAggregation);
 }

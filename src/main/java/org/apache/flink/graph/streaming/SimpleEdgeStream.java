@@ -34,6 +34,7 @@ import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.AscendingTimestampExtractor;
+import org.apache.flink.streaming.api.windowing.assigners.WindowAssigner;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.types.NullValue;
 import org.apache.flink.util.Collector;
@@ -164,6 +165,30 @@ public class SimpleEdgeStream<K, EV> extends GraphStream<K, NullValue, EV> {
 		default:
 			throw new IllegalArgumentException("Illegal edge direction");
 		}
+	}
+
+	@Override
+	public GraphWindowStream<K, EV> slice(WindowAssigner windowAssigner) {
+		return slice(windowAssigner, EdgeDirection.OUT);
+	}
+
+	@Override
+	public GraphWindowStream<K, EV> slice(WindowAssigner windowAssigner, EdgeDirection direction)
+	throws IllegalArgumentException {
+        switch (direction) {
+            case IN:
+                return new GraphWindowStream<K, EV>(
+                        this.reverse().getEdges().keyBy(new NeighborKeySelector<K, EV>(0)).window(windowAssigner));
+            case OUT:
+                return new GraphWindowStream<K, EV>(
+                        getEdges().keyBy(new NeighborKeySelector<K, EV>(0)).window(windowAssigner));
+            case ALL:
+                return new GraphWindowStream<K, EV>(
+                        this.undirected().getEdges().keyBy(
+                                new NeighborKeySelector<K, EV>(0)).window(windowAssigner));
+            default:
+                throw new IllegalArgumentException("Illegal edge direction");
+        }
 	}
 
 	private static final class NeighborKeySelector<K, EV> implements KeySelector<Edge<K, EV>, K> {
