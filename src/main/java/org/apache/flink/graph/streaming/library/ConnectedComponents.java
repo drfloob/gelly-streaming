@@ -25,7 +25,6 @@ import org.apache.flink.graph.streaming.GraphWindowStream;
 import org.apache.flink.graph.streaming.WindowGraphAggregation;
 import org.apache.flink.graph.streaming.example.IterativeConnectedComponents;
 import org.apache.flink.graph.streaming.example.util.DisjointSet;
-import org.apache.flink.types.NullValue;
 import org.apache.flink.streaming.api.windowing.assigners.WindowAssigner;
 
 
@@ -80,7 +79,7 @@ public class ConnectedComponents<K extends Serializable, EV> extends WindowGraph
 	 *
 	 * @param <K> the vertex ID type
 	 */
-	public final static class UpdateCC<K extends Serializable> implements EdgesFold<K, NullValue, DisjointSet<K>> {
+    public final static class UpdateCC<K extends Serializable, EV> implements EdgesFold<K, EV, DisjointSet<K>> {
 
 		/**
 		 * Implements foldEdges method of EdgesFold interface for combining
@@ -97,7 +96,7 @@ public class ConnectedComponents<K extends Serializable, EV> extends WindowGraph
 		 * @throws Exception
 		 */
 		@Override
-		public DisjointSet<K> foldEdges(DisjointSet<K> ds, K vertex, K vertex2, NullValue edgeValue) throws Exception {
+		public DisjointSet<K> foldEdges(DisjointSet<K> ds, K vertex, K vertex2, EV edgeValue) throws Exception {
 			ds.union(vertex, vertex2);
 			return ds;
 		}
